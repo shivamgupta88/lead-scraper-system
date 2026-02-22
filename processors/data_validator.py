@@ -55,7 +55,7 @@ class DataValidator:
                 return False, reason
 
             # That's it! Accept everything else
-            self._record_success()
+            self.validation_stats['passed'] += 1
             return True, "Valid"
 
         # STRICT MODE (original validation)
