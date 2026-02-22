@@ -230,19 +230,26 @@ class BaseScraper(ABC):
         Returns:
             Normalized lead dictionary
         """
+        # Helper to safely get and strip strings
+        def safe_get(key1, key2=None, default=''):
+            val = lead.get(key1)
+            if val is None and key2:
+                val = lead.get(key2)
+            return (val or default).strip() if isinstance(val, str) or val is None else str(val).strip()
+
         return {
-            'email': lead.get('email', '').strip().lower(),
-            'name': lead.get('name', '').strip(),
-            'designation': lead.get('role', lead.get('designation', '')).strip(),
-            'company': lead.get('company', '').strip(),
-            'geography': lead.get('location', lead.get('geography', '')).strip(),
-            'post_content': lead.get('post_content', lead.get('raw_data', ''))[:500],  # Limit to 500 chars
-            'buying_intent': lead.get('signal_type', lead.get('buying_intent', '')).strip(),
-            'linkedin_url': lead.get('linkedin_url', '').strip(),
-            'website': lead.get('website', '').strip(),
+            'email': safe_get('email').lower(),
+            'name': safe_get('name'),
+            'designation': safe_get('role', 'designation'),
+            'company': safe_get('company'),
+            'geography': safe_get('location', 'geography'),
+            'post_content': str(lead.get('post_content') or lead.get('raw_data') or '')[:500],
+            'buying_intent': safe_get('signal_type', 'buying_intent'),
+            'linkedin_url': safe_get('linkedin_url'),
+            'website': safe_get('website'),
             'source': self.source_name,
-            'signal_type': lead.get('signal_type', '').strip(),
-            'raw_data': str(lead.get('raw_data', ''))
+            'signal_type': safe_get('signal_type'),
+            'raw_data': str(lead.get('raw_data') or '')
         }
 
     async def run(self) -> AsyncGenerator[dict, None]:
