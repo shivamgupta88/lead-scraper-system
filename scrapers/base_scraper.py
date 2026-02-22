@@ -233,11 +233,13 @@ class BaseScraper(ABC):
         return {
             'email': lead.get('email', '').strip().lower(),
             'name': lead.get('name', '').strip(),
+            'designation': lead.get('role', lead.get('designation', '')).strip(),
             'company': lead.get('company', '').strip(),
-            'role': lead.get('role', '').strip(),
+            'geography': lead.get('location', lead.get('geography', '')).strip(),
+            'post_content': lead.get('post_content', lead.get('raw_data', ''))[:500],  # Limit to 500 chars
+            'buying_intent': lead.get('signal_type', lead.get('buying_intent', '')).strip(),
             'linkedin_url': lead.get('linkedin_url', '').strip(),
             'website': lead.get('website', '').strip(),
-            'location': lead.get('location', '').strip(),
             'source': self.source_name,
             'signal_type': lead.get('signal_type', '').strip(),
             'raw_data': str(lead.get('raw_data', ''))

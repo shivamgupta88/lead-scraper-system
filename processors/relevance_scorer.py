@@ -101,8 +101,8 @@ class RelevanceScorer:
         score = 0.0
 
         # Title match (max 4 points)
-        role = lead.get('role', '').lower()
-        title_score = calculate_keyword_score(role, TITLE_KEYWORDS)
+        designation = lead.get('designation', lead.get('role', '')).lower()
+        title_score = calculate_keyword_score(designation, TITLE_KEYWORDS)
         score += min(4, title_score)
 
         # Company type (max 2 points)

@@ -59,10 +59,10 @@ class Database:
 
         insert_sql = """
         INSERT OR IGNORE INTO leads (
-            email, name, company, role, linkedin_url, website, location,
-            source, signal_type, date_found, relevance_score, score_breakdown,
-            content_hash, raw_data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            email, name, designation, company, geography, post_content, buying_intent,
+            linkedin_url, website, source, signal_type, date_found, relevance_score,
+            score_breakdown, content_hash, raw_data
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
         data = []
@@ -70,11 +70,13 @@ class Database:
             data.append((
                 lead.email,
                 lead.name,
+                lead.designation,
                 lead.company,
-                lead.role,
+                lead.geography,
+                lead.post_content,
+                lead.buying_intent,
                 lead.linkedin_url,
                 lead.website,
-                lead.location,
                 lead.source,
                 lead.signal_type,
                 lead.date_found,
@@ -145,8 +147,8 @@ class Database:
             List of lead dictionaries
         """
         query = """
-        SELECT email, name, company, role, linkedin_url, website, location,
-               source, signal_type, date_found, relevance_score
+        SELECT name, designation, email, post_content, buying_intent, company, geography,
+               relevance_score, source, signal_type, date_found
         FROM leads
         WHERE relevance_score >= ?
         ORDER BY relevance_score DESC, date_found DESC
@@ -164,17 +166,13 @@ class Database:
             leads = []
             for row in rows:
                 leads.append({
-                    'email': row[0],
-                    'name': row[1],
-                    'company': row[2],
-                    'role': row[3],
-                    'linkedin_url': row[4] or '',
-                    'website': row[5] or '',
-                    'location': row[6] or '',
-                    'source': row[7],
-                    'signal_type': row[8],
-                    'date_found': row[9],
-                    'relevance_score': row[10]
+                    'Contact person name': row[0],
+                    'Contact person designation': row[1],
+                    'Contact person email': row[2],
+                    'Post content': row[3] or '',
+                    'Buying intent': row[4] or '',
+                    'Company': row[5],
+                    'Geography': row[6] or ''
                 })
 
             return leads

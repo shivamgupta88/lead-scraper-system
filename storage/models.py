@@ -10,16 +10,18 @@ import json
 @dataclass
 class Lead:
     """Lead data model"""
-    # Required fields
-    email: str
-    name: str
-    company: str
-    role: str
+    # Required fields (matching CSV format)
+    email: str                          # Contact person email
+    name: str                           # Contact person name
+    designation: str                    # Contact person designation
+    company: str                        # Company
+    geography: str = ""                 # Geography
+    post_content: str = ""              # Post content (with keywords)
+    buying_intent: str = ""             # Buying intent
 
-    # Optional fields
+    # Optional fields (for internal use)
     linkedin_url: Optional[str] = None
     website: Optional[str] = None
-    location: Optional[str] = None
 
     # Metadata
     source: str = ""
@@ -43,6 +45,16 @@ class Lead:
         content = f"{self.email.lower()}{self.company.lower()}{self.name.lower()}"
         return hashlib.sha256(content.encode()).hexdigest()
 
+    @property
+    def role(self) -> str:
+        """Alias for designation (backward compatibility)"""
+        return self.designation
+
+    @property
+    def location(self) -> str:
+        """Alias for geography (backward compatibility)"""
+        return self.geography
+
     def to_dict(self) -> dict:
         """Convert to dictionary"""
         data = asdict(self)
@@ -64,34 +76,32 @@ class Lead:
         return cls(**data)
 
     def to_csv_row(self) -> dict:
-        """Convert to CSV row format"""
+        """Convert to CSV row format (matching required format)"""
         return {
-            'email': self.email,
-            'name': self.name,
-            'company': self.company,
-            'role': self.role,
-            'linkedin_url': self.linkedin_url or '',
-            'website': self.website or '',
-            'location': self.location or '',
-            'source': self.source,
-            'signal_type': self.signal_type,
-            'date_found': self.date_found,
-            'relevance_score': self.relevance_score
+            'Contact person name': self.name,
+            'Contact person designation': self.designation,
+            'Contact person email': self.email,
+            'Post content': self.post_content,
+            'Buying intent': self.buying_intent,
+            'Company': self.company,
+            'Geography': self.geography
         }
 
 
 # Database schema SQL
 SCHEMA_SQL = """
--- Leads table
+-- Leads table (updated schema matching CSV format)
 CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL,
     name TEXT NOT NULL,
+    designation TEXT NOT NULL,
     company TEXT NOT NULL,
-    role TEXT NOT NULL,
+    geography TEXT,
+    post_content TEXT,
+    buying_intent TEXT,
     linkedin_url TEXT,
     website TEXT,
-    location TEXT,
     source TEXT NOT NULL,
     signal_type TEXT,
     date_found TEXT NOT NULL,
@@ -110,6 +120,8 @@ CREATE INDEX IF NOT EXISTS idx_leads_source ON leads(source);
 CREATE INDEX IF NOT EXISTS idx_leads_score ON leads(relevance_score);
 CREATE INDEX IF NOT EXISTS idx_leads_date ON leads(date_found);
 CREATE INDEX IF NOT EXISTS idx_leads_hash ON leads(content_hash);
+CREATE INDEX IF NOT EXISTS idx_leads_geography ON leads(geography);
+CREATE INDEX IF NOT EXISTS idx_leads_designation ON leads(designation);
 
 -- Scrape sessions table for progress tracking
 CREATE TABLE IF NOT EXISTS scrape_sessions (
@@ -172,17 +184,13 @@ CREATE INDEX IF NOT EXISTS idx_error_time ON error_log(occurred_at);
 
 
 def get_csv_headers() -> list:
-    """Get CSV column headers"""
+    """Get CSV column headers (matching required format)"""
     return [
-        'email',
-        'name',
-        'company',
-        'role',
-        'linkedin_url',
-        'website',
-        'location',
-        'source',
-        'signal_type',
-        'date_found',
-        'relevance_score'
+        'Contact person name',
+        'Contact person designation',
+        'Contact person email',
+        'Post content',
+        'Buying intent',
+        'Company',
+        'Geography'
     ]

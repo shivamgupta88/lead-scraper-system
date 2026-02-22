@@ -39,8 +39,8 @@ class DataValidator:
         """
         self.validation_stats['total_validated'] += 1
 
-        # Required fields
-        required_fields = ['email', 'name', 'company', 'role']
+        # Required fields (updated for new format)
+        required_fields = ['email', 'name', 'company', 'designation']
         for field in required_fields:
             if not lead.get(field) or lead.get(field) == 'Unknown':
                 reason = f"Missing or invalid {field}"
@@ -121,10 +121,14 @@ class DataValidator:
         sanitized = lead.copy()
 
         # Sanitize text fields
-        text_fields = ['name', 'company', 'role', 'location', 'signal_type']
+        text_fields = ['name', 'company', 'designation', 'geography', 'signal_type', 'buying_intent']
         for field in text_fields:
             if field in sanitized and sanitized[field]:
                 sanitized[field] = sanitize_text(sanitized[field], max_length=200)
+
+        # Sanitize post_content (longer field)
+        if 'post_content' in sanitized and sanitized['post_content']:
+            sanitized['post_content'] = sanitize_text(sanitized['post_content'], max_length=1000)
 
         # Normalize email
         if 'email' in sanitized:
@@ -175,13 +179,21 @@ class DataValidator:
         if lead.get('website'):
             quality_score += 1
 
-        # Has specific role (not "Unknown") (+1)
-        if lead.get('role') and lead['role'] != 'Unknown':
+        # Has specific designation (not "Unknown") (+1)
+        if lead.get('designation') and lead['designation'] != 'Unknown':
             quality_score += 1
 
-        # Has location (+0.5)
-        if lead.get('location'):
+        # Has geography (+0.5)
+        if lead.get('geography'):
             quality_score += 0.5
+
+        # Has post content (+1)
+        if lead.get('post_content') and len(lead.get('post_content', '')) > 50:
+            quality_score += 1
+
+        # Has buying intent (+1)
+        if lead.get('buying_intent'):
+            quality_score += 1
 
         # Strong signal types (+1)
         strong_signals = ['hiring', 'funding', 'product_launch']
