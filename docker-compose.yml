@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  lead-scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lead-scraper-system
+
+    # Environment variables from .env file
+    env_file:
+      - .env
+
+    # Mount volumes for persistent data
+    volumes:
+      # Database and exports persistence
+      - ./data:/app/data
+      # Logs persistence
+      - ./data/logs:/app/data/logs
+      # Export folder
+      - ./data/exports:/app/data/exports
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Network mode
+    network_mode: bridge
+
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Labels
+    labels:
+      app: "lead-scraper"
+      version: "1.0"
+      description: "B2B Lead Scraper System"
+
+  # Optional: SQLite Web UI for database inspection
+  sqlite-web:
+    image: coleifer/sqlite-web
+    container_name: lead-scraper-db-viewer
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      SQLITE_DATABASE: /data/leads.db
+    command: ["--host", "0.0.0.0", "--port", "8080", "/data/leads.db"]
+    restart: unless-stopped
+    profiles:
+      - debug
+    labels:
+      app: "lead-scraper-db-viewer"
+      description: "SQLite Database Web Viewer"
+
+networks:
+  default:
+    name: lead-scraper-network
