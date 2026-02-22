@@ -39,6 +39,26 @@ class DataValidator:
         """
         self.validation_stats['total_validated'] += 1
 
+        # In non-strict mode, only validate email (VERY RELAXED)
+        if not self.strict_mode:
+            # Only check if email exists and has @ symbol
+            email = lead.get('email', '').strip().lower()
+            if not email or '@' not in email:
+                reason = "Missing email"
+                self._record_failure(reason)
+                return False, reason
+
+            # Check for noreply emails
+            if 'noreply' in email or 'no-reply' in email:
+                reason = "No-reply email address"
+                self._record_failure(reason)
+                return False, reason
+
+            # That's it! Accept everything else
+            self._record_success()
+            return True, "Valid"
+
+        # STRICT MODE (original validation)
         # Required fields (updated for new format)
         required_fields = ['email', 'name', 'company', 'designation']
         for field in required_fields:
@@ -68,12 +88,11 @@ class DataValidator:
             self._record_failure(reason)
             return False, reason
 
-        # Strict mode: Check MX records
-        if self.strict_mode:
-            if not check_mx_record(email):
-                reason = "No MX records for domain"
-                self._record_failure(reason)
-                return False, reason
+        # Check MX records
+        if not check_mx_record(email):
+            reason = "No MX records for domain"
+            self._record_failure(reason)
+            return False, reason
 
         # Validate URLs if provided
         if lead.get('linkedin_url'):
