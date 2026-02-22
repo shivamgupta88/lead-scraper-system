@@ -92,12 +92,14 @@ class Orchestrator:
 
         self.scrapers = [
             HackerNewsScraper(*scraper_args),
-            RedditScraper(*scraper_args),
+            # RedditScraper(*scraper_args),  # DISABLED: Reddit API requires approval (2026 policy change)
             GitHubScraper(*scraper_args),
             ProductHuntScraper(*scraper_args),
             TechCrunchScraper(*scraper_args),
             WellfoundScraper(*scraper_args)
         ]
+
+        log.info("Initialized 5 scrapers (Reddit skipped due to API policy change)")
 
         log.info("Orchestrator initialized successfully")
 

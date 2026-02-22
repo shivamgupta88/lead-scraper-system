@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     rate_limit_techcrunch: int = Field(default=30, env="RATE_LIMIT_TECHCRUNCH")
 
     # Scraping Config
-    max_concurrent_scrapers: int = Field(default=6, env="MAX_CONCURRENT_SCRAPERS")
+    max_concurrent_scrapers: int = Field(default=5, env="MAX_CONCURRENT_SCRAPERS")  # Updated: Reddit disabled
     batch_size: int = Field(default=100, env="BATCH_SIZE")
     max_leads_target: int = Field(default=150000, env="MAX_LEADS_TARGET")
     scrape_duration_hours: int = Field(default=48, env="SCRAPE_DURATION_HOURS")
