@@ -1,6 +1,8 @@
 aiohttp>=3.9.0
 aiosqlite==0.17.0
 asyncpraw>=7.7.0
+brotli>=1.1.0
+brotlicffi>=1.1.0
 PyGithub>=2.1.0
 gql>=3.5.0
 aiohttp-retry>=2.8.0
